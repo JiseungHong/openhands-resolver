@@ -297,6 +297,7 @@ async def process_issue(
         comment_success=comment_success,
         success_explanation=success_explanation,
         error=state.last_error if state and state.last_error else None,
+        model=llm_config.model.split("/")[-1],
     )
     return output
 
