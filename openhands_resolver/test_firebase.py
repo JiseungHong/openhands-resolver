@@ -230,7 +230,6 @@ def main():
     parser.add_argument(
     "--firebase-config",
     type=str,
-    required=True,
     help="Firebase configuration in JSON format."
     )
 
