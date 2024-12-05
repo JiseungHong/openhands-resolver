@@ -627,7 +627,6 @@ def main():
         default="output",
         help="Output directory to write the results.",
     )
-    # (Check!) Suppose the user sends argument with comma seperated list of llm models.
     parser.add_argument(
         "--llm-models",
         type=str,

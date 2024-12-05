@@ -54,10 +54,11 @@ def main():
     resolver_output1 = load_single_resolver_output(output_path1, issue_number)
     resolver_output2 = load_single_resolver_output(output_path2, issue_number)
     
-    data = {'issue_number': issue_number, 'model_name_1': resolver_output1.model, 'git_patch_1': resolver_output1.git_patch[:10], \
-        'model_name_2': resolver_output2.model, 'git_patch_2': resolver_output2.git_patch[:10]}
+    data = {'issue_number': issue_number, \
+        'model_name_1': resolver_output1.model, 'git_patch_1': resolver_output1.git_patch, \
+        'model_name_2': resolver_output2.model, 'git_patch_2': resolver_output2.git_patch}
     
-    firebase_database_url = ""
+    firebase_database_url = "{firebase_database_url}"
     
     firebase_url = f"{firebase_database_url}/issues/{issue_number}.json"
     response = requests.put(firebase_url, json=data)
