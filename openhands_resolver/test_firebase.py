@@ -281,3 +281,6 @@ def main():
         issue_number=int(my_args.issue_number),
         firebase_config=firebase_config
     )
+    
+if __name__ == "__main__":
+    main()
