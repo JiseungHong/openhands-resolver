@@ -45,7 +45,7 @@ from openhands_resolver.utils import (
 )
 
 import firebase_admin
-from firebase_admin import credentials, storage
+from firebase_admin import credentials, firestore
 
 def issue_handler_factory(issue_type: str, owner: str, repo: str, token: str) -> IssueHandlerInterface:
     if issue_type == "issue":
@@ -121,6 +121,16 @@ def send_to_firebase (
     issue_number: int,
     firebase_config: dict,
 ) -> None:
+    """
+    Send the resolver output to Firebase Firestore.
+
+    Args:
+        resolved_output (ResolverOutput): The resolved output to be sent.
+        username (str): GitHub username.
+        repo (str): GitHub repository name.
+        issue_number (int): Issue number.
+        firebase_config (dict): Firebase configuration.
+    """
     logger.info(f"2. Write down the resolver to {output_dir}/... .")
     
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -140,20 +150,19 @@ def send_to_firebase (
         output_fp.write(json.dumps(output_data) + "\n")
     
     logger.info("3. Sending jsonl file to firebase.")
-    bucket = storage.bucket()
-    logger.info(f"3.1. Saving to bucket: {bucket.name}")
     
     cred = credentials.Certificate(firebase_config)
     if not firebase_admin._apps:
-        firebase_admin.initialize_app(cred, {
-            "storageBucket": "pr-arena.firebasestorage.app"
-            # "storageBucket": firebase_config["project_id"] + ".appspot.com"
-        })
+        firebase_admin.initialize_app(cred)
     
-    blob = bucket.blob(output_file.name)
-    blob.upload_from_filename(str(output_file))
+    # Initialize Firestore client
+    db = firestore.client()
     
-    logger.info(f"3.2. File {output_file} successfully uploaded to Firebase Storage.")
+    collection_name = f"{username}-{repo}-{issue_number}"
+    collection_ref = db.collection(collection_name)
+    collection_ref.add(output_data)
+
+    logger.info(f"Data successfully uploaded to Firestore collection: {collection_name}")
     
 
 def write_url_on_comment ():
@@ -269,6 +278,6 @@ def main():
         output_dir=my_args.output_dir,
         username=username,
         repo=repo,
-        issue_number=my_args.issue_number,
+        issue_number=int(my_args.issue_number),
         firebase_config=firebase_config
     )
