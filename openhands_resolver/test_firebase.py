@@ -163,11 +163,13 @@ def send_to_firebase (
     
     logger.info("3.2. Database complete")
     
-    collection_name = f"{username}-{repo}-{issue_number}"
-    collection_ref = db.collection(collection_name)
-    collection_ref.add(output_data)
+    collection_name = "issues"
+    document_id = f"{username}-{repo}-{issue_number}"
 
-    logger.info(f"3.3. Data successfully uploaded to Firestore collection: {collection_name}")
+    doc_ref = db.collection(collection_name).document(document_id)
+    doc_ref.set(output_data)
+
+    print(f"Data successfully written to Firestore collection '{collection_name}' with ID: {document_id}")
     
 
 def write_url_on_comment ():
