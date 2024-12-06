@@ -45,7 +45,7 @@ from openhands_resolver.utils import (
 )
 
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, initialize_app
 
 def issue_handler_factory(issue_type: str, owner: str, repo: str, token: str) -> IssueHandlerInterface:
     if issue_type == "issue":
@@ -146,6 +146,8 @@ def send_to_firebase (
         "issue_number": issue_number
     })
     
+    logger.info(f"2.1. Resolver: {output_data}")
+    
     with open(output_file, "a") as output_fp:
         output_fp.write(json.dumps(output_data) + "\n")
     
@@ -155,14 +157,17 @@ def send_to_firebase (
     if not firebase_admin._apps:
         firebase_admin.initialize_app(cred)
     
+    logger.info("3.1. Credentials complete")
     # Initialize Firestore client
     db = firestore.client()
+    
+    logger.info("3.2. Database complete")
     
     collection_name = f"{username}-{repo}-{issue_number}"
     collection_ref = db.collection(collection_name)
     collection_ref.add(output_data)
 
-    logger.info(f"Data successfully uploaded to Firestore collection: {collection_name}")
+    logger.info(f"3.3. Data successfully uploaded to Firestore collection: {collection_name}")
     
 
 def write_url_on_comment ():
