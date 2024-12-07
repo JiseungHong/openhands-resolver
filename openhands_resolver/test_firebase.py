@@ -101,7 +101,7 @@ def build_resolver_output (
         issue_type=issue_handler.issue_type,
         instruction="instruction",
         base_commit="base_commit",
-        git_patch="git_patch",
+        git_patch=f"Git Patch for Model {model}",
         history=[],
         metrics=None,
         success=1,
@@ -114,7 +114,8 @@ def build_resolver_output (
 
 
 def send_to_firebase (
-    resolved_output: ResolverOutput,
+    resolved_output1: ResolverOutput,
+    resolved_output2: ResolverOutput,
     output_dir: str,
     username: str,
     repo: str,
@@ -135,18 +136,26 @@ def send_to_firebase (
     
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
     
-    file_name = f"{username}-{repo}-{issue_number}.jsonl"
+    file_name = f"{username}_{repo}_{issue_number}.jsonl"
     output_file = pathlib.Path(output_dir) / file_name
-    # output_file = os.path.join(output_dir, file_name)
     
-    output_data = json.loads(resolved_output.model_dump_json())
-    output_data.update({
+    output_data1 = json.loads(resolved_output1.model_dump_json())
+    output_data1.update({
         "username": username,
         "repo": repo,
         "issue_number": issue_number
     })
     
-    logger.info(f"2.1. Resolver: {output_data}")
+    output_data2 = json.loads(resolved_output2.model_dump_json())
+    output_data2.update({
+        "username": username,
+        "repo": repo,
+        "issue_number": issue_number
+    })
+    
+    output_data = {"json1": output_data1, "json2": output_data2, "status": "pending"}
+    
+    logger.info(f"2.1. Resolvers: {output_data}")
     
     with open(output_file, "a") as output_fp:
         output_fp.write(json.dumps(output_data) + "\n")
@@ -275,18 +284,29 @@ def main():
         model=selected_llms[0]
     )
     
+    resolver_output2 = build_resolver_output (
+        owner=owner,
+        repo=repo,
+        token=token,
+        username=username,
+        issue_type=issue_type,
+        issue_number=int(my_args.issue_number),
+        model=selected_llms[1]
+    )
+    
     raw_config = my_args.firebase_config if my_args.firebase_config else os.getenv("FIREBASE_CONFIG")
     firebase_config = load_firebase_config(raw_config)
     logger.info(f"Firebase Config Loaded... {firebase_config}")
     
     send_to_firebase (
-        resolved_output=resolver_output1,
+        resolved_output1=resolver_output1,
+        resolved_output2=resolver_output2,
         output_dir=my_args.output_dir,
         username=username,
         repo=repo,
         issue_number=int(my_args.issue_number),
         firebase_config=firebase_config
     )
-    
+
 if __name__ == "__main__":
     main()
