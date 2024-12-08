@@ -179,53 +179,6 @@ def send_to_firebase (
     doc_ref.set(output_data)
 
     print(f"Data successfully written to Firestore collection '{collection_name}' with ID: {document_id}")
-    
-
-def get_selected_model_number (document_id: str, firebase_config: dict):
-    """
-    Listen for changes in a specific Firestore document (comparison ID).
-    """
-    cred = credentials.Certificate(firebase_config)
-    if not firebase_admin._apps:
-        firebase_admin.initialize_app(cred)
-    
-    logger.info("3.1. Credentials complete")
-    db = firestore.client()
-    
-    doc_ref = db.collection("comparisons").document(document_id)
-
-    def on_snapshot(doc_snapshot, changes, read_time):
-        for doc in doc_snapshot:
-            doc_data = doc.to_dict()
-            logger.info(f"Change detected in comparison {document_id}: {doc_data}")
-
-            if doc_data.get("status") == "completed":
-                selected = doc_data.get("selected")
-                if selected is None:
-                    print(f"Error: 'selected' field is missing in the document! Status: {doc_data.get("status")}")
-                logger.info(f"Selected model received: {selected}")
-                
-                github_env_path = os.getenv("GITHUB_ENV")
-                if not github_env_path:
-                    raise RuntimeError("GITHUB_ENV environment variable is not set.")
-
-                # Write the decision to the environment file
-                with open(github_env_path, "a") as env_file:
-                    env_file.write(f"SELECTED={selected}\n")
-                logger.info(f"Model #{selected} is selected and saved to GitHub environment.")
-                return
-
-    # Attach the listener
-    logger.info(f"Listening for changes on comparison ID: {document_id}")
-    doc_watch = doc_ref.on_snapshot(on_snapshot)
-
-    # Keep the listener alive
-    try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        doc_watch.unsubscribe()
-        logger.info("Stopped listening for changes.")
 
 def load_firebase_config(config_json: str) -> dict:
     """Load Firebase configuration from JSON string."""
@@ -350,10 +303,6 @@ def main():
         issue_number=int(my_args.issue_number),
         firebase_config=firebase_config
     )
-    
-    # Here, user should open https://pr-arena.web.app?id={user name}_{repo}_{issue number} and select one model.
-    # Uncomment to test out receiving user's response.
-    # get_selected_model_number (document_id=f"{username}-{repo}-{int(my_args.issue_number)}", firebase_config=firebase_config)
 
 if __name__ == "__main__":
     main()
