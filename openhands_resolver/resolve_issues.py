@@ -725,7 +725,8 @@ def main():
     parser.add_argument(
         "--max-iterations",
         type=int,
-        default=50,
+        # default=50,
+        default=1,
         help="Maximum number of iterations to run.",
     )
     parser.add_argument(
