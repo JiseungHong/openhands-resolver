@@ -67,7 +67,7 @@ def load_firebase_config(config_json: str) -> dict:
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid Firebase configuration JSON: {e}")
 
-def send_to_firebase (
+async def send_to_firebase (
     resolved_output1: ResolverOutput,
     resolved_output2: ResolverOutput,
     output_dir: str,
@@ -842,7 +842,7 @@ def main():
     logger.info(f"Firebase Config Loaded... {firebase_config}")
     
     issue_number = issue_numbers[0]
-    send_to_firebase (
+    asyncio.run(send_to_firebase (
         resolved_output1=resolver_output1,
         resolved_output2=resolver_output2,
         output_dir=my_args.output_dir,
@@ -850,7 +850,7 @@ def main():
         repo=repo,
         issue_number=issue_number,
         firebase_config=firebase_config
-    )
+    ))
 
 
 if __name__ == "__main__":
