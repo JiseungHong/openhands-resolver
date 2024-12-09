@@ -424,45 +424,71 @@ async def resolve_issues_with_random_models(
     selected_llms = random.sample(llm_configs, 2)
     logger.info(f"Selected LLM models: {selected_llms[0]} and {selected_llms[1]}")
 
-    llm_config = selected_llms[0]
-    logger.info(f"Resolving issues using {llm_config.model.split("/")[-1]}: {llm_config}")
-    resolverOutput1 = await resolve_issues(
-        owner,
-        repo,
-        token,
-        username,
-        max_iterations,
-        limit_issues,
-        num_workers,
-        output_dir,
-        llm_config,
-        runtime_container_image,
-        prompt_template,
-        issue_type,
-        repo_instruction,
-        issue_numbers,
-        1,
-    )
+    # llm_config = selected_llms[0]
+    # logger.info(f"Resolving issues using {llm_config.model.split("/")[-1]}: {llm_config}")
+    # resolverOutput1 = await resolve_issues(
+    #     owner,
+    #     repo,
+    #     token,
+    #     username,
+    #     max_iterations,
+    #     limit_issues,
+    #     num_workers,
+    #     output_dir,
+    #     llm_config,
+    #     runtime_container_image,
+    #     prompt_template,
+    #     issue_type,
+    #     repo_instruction,
+    #     issue_numbers,
+    #     1,
+    # )
 
-    llm_config = selected_llms[1]
-    logger.info(f"Resolving issues using {llm_config.model.split("/")[-1]}: {llm_config}")
-    resolverOutput2 = await resolve_issues(
-        owner,
-        repo,
-        token,
-        username,
-        max_iterations,
-        limit_issues,
-        num_workers,
-        output_dir,
-        llm_config,
-        runtime_container_image,
-        prompt_template,
-        issue_type,
-        repo_instruction,
-        issue_numbers,
-        2,
-    )
+    # llm_config = selected_llms[1]
+    # logger.info(f"Resolving issues using {llm_config.model.split("/")[-1]}: {llm_config}")
+    # resolverOutput2 = await resolve_issues(
+    #     owner,
+    #     repo,
+    #     token,
+    #     username,
+    #     max_iterations,
+    #     limit_issues,
+    #     num_workers,
+    #     output_dir,
+    #     llm_config,
+    #     runtime_container_image,
+    #     prompt_template,
+    #     issue_type,
+    #     repo_instruction,
+    #     issue_numbers,
+    #     2,
+    # )
+    tasks = []
+    for idx, llm_config in enumerate(selected_llms, start=1):
+        logger.info(f"Resolving issues using {llm_config.model.split('/')[-1]}: {llm_config}")
+        tasks.append(
+            resolve_issues(
+                owner,
+                repo,
+                token,
+                username,
+                max_iterations,
+                limit_issues,
+                num_workers,
+                output_dir,
+                llm_config,
+                runtime_container_image,
+                prompt_template,
+                issue_type,
+                repo_instruction,
+                issue_numbers,
+                idx,
+            )
+        )
+
+    # Run tasks concurrently
+    results = await asyncio.gather(*tasks)
+    resolverOutput1, resolverOutput2 = results
     
     if asyncio.iscoroutine(resolverOutput1):
         logger.info(f"{resolverOutput1} is coroutine.")
