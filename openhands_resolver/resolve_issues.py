@@ -648,7 +648,7 @@ async def resolve_issues(
     return resolverOutput
 
 
-async def main():
+def main():
 
     parser = argparse.ArgumentParser(description="Resolve issues from Github.")
     parser.add_argument(
@@ -854,4 +854,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
