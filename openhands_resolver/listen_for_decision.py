@@ -81,7 +81,9 @@ async def get_selected_model_number (document_id: str, firebase_config: dict):
                 with open(github_env_path, "a") as env_file:
                     env_file.write(f"SELECTED={selected}\n")
                 logger.info(f"Model #{selected} is selected and saved to GitHub environment {github_env_path}.")
-                event.set()
+                logger.info("Setting event to stop asyncio loop.")
+                event.set()  # Set the event
+                logger.info("Event set.")
                 return
 
     # Attach the listener
@@ -90,7 +92,9 @@ async def get_selected_model_number (document_id: str, firebase_config: dict):
 
     # Keep the listener alive
     try:
+        logger.info("Waiting for event to complete.")
         await event.wait()
+        logger.info("Event completed.")
     finally:
         doc_watch.unsubscribe()
         logger.info("Stopped listening for changes.")
