@@ -82,7 +82,7 @@ async def get_selected_model_number (document_id: str, firebase_config: dict):
                     env_file.write(f"SELECTED={selected}\n")
                 logger.info(f"Model #{selected} is selected and saved to GitHub environment.")
                 on_snapshot_completed = True
-                doc_watch.unsubscribe()
+                # doc_watch.unsubscribe()
                 return
 
     # Attach the listener
