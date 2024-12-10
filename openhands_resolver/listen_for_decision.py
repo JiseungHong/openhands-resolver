@@ -61,7 +61,7 @@ async def get_selected_model_number (document_id: str, firebase_config: dict):
     
     doc_ref = db.collection("issues").document(document_id)
 
-    on_snapshot_completed = False
+    event = asyncio.Event()
     def on_snapshot(doc_snapshot, changes, read_time):
         for doc in doc_snapshot:
             doc_data = doc.to_dict()
@@ -80,9 +80,8 @@ async def get_selected_model_number (document_id: str, firebase_config: dict):
                 # Write the decision to the environment file
                 with open(github_env_path, "a") as env_file:
                     env_file.write(f"SELECTED={selected}\n")
-                logger.info(f"Model #{selected} is selected and saved to GitHub environment.")
-                on_snapshot_completed = True
-                # doc_watch.unsubscribe()
+                logger.info(f"Model #{selected} is selected and saved to GitHub environment {github_env_path}.")
+                event.set()
                 return
 
     # Attach the listener
@@ -91,9 +90,8 @@ async def get_selected_model_number (document_id: str, firebase_config: dict):
 
     # Keep the listener alive
     try:
-        while not on_snapshot_completed:
-            time.sleep(1)
-    except KeyboardInterrupt:
+        await event.wait()
+    finally:
         doc_watch.unsubscribe()
         logger.info("Stopped listening for changes.")
 
