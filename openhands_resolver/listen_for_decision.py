@@ -58,7 +58,7 @@ def get_selected_model_number (document_id: str, firebase_config: dict):
     logger.info("3.1. Credentials complete")
     db = firestore.client()
     
-    doc_ref = db.collection("comparisons").document(document_id)
+    doc_ref = db.collection("issues").document(document_id)
 
     def on_snapshot(doc_snapshot, changes, read_time):
         for doc in doc_snapshot:
