@@ -48,7 +48,7 @@ from openhands_resolver.utils import (
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 
-def get_selected_model_number (document_id: str, firebase_config: dict):
+async def get_selected_model_number (document_id: str, firebase_config: dict):
     """
     Listen for changes in a specific Firestore document (comparison ID).
     """
@@ -170,7 +170,7 @@ def main():
     firebase_config = load_firebase_config(raw_config)
     logger.info(f"Firebase Config Loaded... {firebase_config}")
     
-    get_selected_model_number (document_id=f"{owner}-{repo}-{int(my_args.issue_number)}", firebase_config=firebase_config)
+    asyncio.run(get_selected_model_number (document_id=f"{owner}-{repo}-{int(my_args.issue_number)}", firebase_config=firebase_config))
     
 if __name__ == "__main__":
     main()
