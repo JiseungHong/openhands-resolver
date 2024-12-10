@@ -11,6 +11,7 @@ import pathlib
 import subprocess
 import json
 import random
+import time
 
 from termcolor import colored
 from tqdm import tqdm
@@ -60,10 +61,11 @@ def get_selected_model_number (document_id: str, firebase_config: dict):
     
     doc_ref = db.collection("issues").document(document_id)
 
+    on_snapshot_completed = False
     def on_snapshot(doc_snapshot, changes, read_time):
         for doc in doc_snapshot:
             doc_data = doc.to_dict()
-            logger.info(f"Change detected in comparison {document_id}: {doc_data}")
+            logger.info(f"Change detected in issues - {document_id}: {doc_data}")
 
             if doc_data.get("status") == "completed":
                 selected = doc_data.get("selected")
@@ -79,16 +81,18 @@ def get_selected_model_number (document_id: str, firebase_config: dict):
                 with open(github_env_path, "a") as env_file:
                     env_file.write(f"SELECTED={selected}\n")
                 logger.info(f"Model #{selected} is selected and saved to GitHub environment.")
+                on_snapshot_completed = True
+                doc_watch.unsubscribe()
                 return
 
     # Attach the listener
-    logger.info(f"Listening for changes on comparison ID: {document_id}")
+    logger.info(f"Listening for changes on document ID: {document_id}")
     doc_watch = doc_ref.on_snapshot(on_snapshot)
 
     # Keep the listener alive
     try:
-        while True:
-            pass
+        while not on_snapshot_completed:
+            time.sleep(1)
     except KeyboardInterrupt:
         doc_watch.unsubscribe()
         logger.info("Stopped listening for changes.")
