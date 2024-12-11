@@ -93,11 +93,9 @@ async def get_selected_model_number (document_id: str, firebase_config: dict):
     # Attach the listener
     logger.info(f"Listening for changes on document ID: {document_id}")
     doc_watch = doc_ref.on_snapshot(on_snapshot)
-    logger.info("HERE!!!")
 
     # Keep the listener alive
     try:
-        logger.info("Waiting for event to complete.")
         await event.wait()
         logger.info("Event completed.")
     finally:
