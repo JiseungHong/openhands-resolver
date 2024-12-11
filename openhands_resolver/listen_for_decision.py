@@ -60,7 +60,8 @@ async def get_selected_model_number (document_id: str, firebase_config: dict):
     db = firestore.client()
     
     doc_ref = db.collection("issues").document(document_id)
-
+    
+    loop = asyncio.get_event_loop()
     event = asyncio.Event()
     def on_snapshot(doc_snapshot, changes, read_time):
         for doc in doc_snapshot:
@@ -82,7 +83,6 @@ async def get_selected_model_number (document_id: str, firebase_config: dict):
                     env_file.write(f"SELECTED={selected}\n")
                 logger.info(f"Model #{selected} is selected and saved to GitHub environment {github_env_path}.")
                 logger.info("Setting event to stop asyncio loop.")
-                loop = asyncio.get_event_loop()
                 loop.call_soon_threadsafe(event.set)
                 logger.info("Event set.")
                 break
